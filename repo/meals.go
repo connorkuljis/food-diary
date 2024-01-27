@@ -4,36 +4,39 @@ import (
 	"time"
 
 	_ "github.com/jmoiron/sqlx"
+	_ "modernc.org/sqlite"
 )
 
 type Meal struct {
-	Id           int64     `db:"id"`
-	Name         string    `db:"name"`
-	MealType     string    `db:"meal_type"`
-	DateConsumed time.Time `db:"date_consumed"`
+	Id           int64  `db:"id"`
+	Name         string `db:"name"`
+	MealType     string `db:"meal_type"`
+	DateConsumed string `db:"date_consumed"`
 }
 
 var mealsSchema = `CREATE TABLE IF NOT EXISTS Meals (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
 	name TEXT NOT NULL,
 	meal_type TEXT NOT NULL,
-	date_consumed TIMESTAMP NOT NULL
+	date_consumed TEXT NOT NULL
 )`
 
 type MealType string
 
 const (
+	Timestamp = "2006-01-02 15:04:05"
+
 	Breakfast MealType = "breakfast"
 	Lunch     MealType = "lunch"
 	Dinner    MealType = "dinner"
 	Snacks    MealType = "snacks"
 )
 
-func NewMeal(name string, mealType MealType, dateConsumed time.Time) Meal {
+func NewMeal(name string, mealType MealType, time time.Time) Meal {
 	return Meal{
 		Name:         name,
 		MealType:     string(mealType),
-		DateConsumed: dateConsumed,
+		DateConsumed: time.Format(Timestamp),
 	}
 }
 
@@ -60,6 +63,19 @@ func GetAllMeals() ([]Meal, error) {
 
 	var meals []Meal
 	err := db.Select(&meals, query)
+	if err != nil {
+		return meals, err
+	}
+
+	return meals, nil
+}
+
+func GetMealsByDate(inTime time.Time) ([]Meal, error) {
+	query := `SELECT * FROM Meals WHERE DATE(date_consumed) = DATE(?)`
+
+	var meals []Meal
+
+	err := db.Select(&meals, query, inTime.Format("2006-01-02"))
 	if err != nil {
 		return meals, err
 	}

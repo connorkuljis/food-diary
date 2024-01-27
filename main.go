@@ -47,7 +47,7 @@ func main() {
 	fileSystem := inMemoryFS
 	router := chi.NewMux()
 	store := sessions.NewCookieStore([]byte("special_key"))
-	port := "8080"
+	port := "8081"
 	staticDir := "static"
 	templateDir := "templates"
 	siteData := SiteData{
@@ -103,6 +103,7 @@ func (s *Server) Routes() {
 	s.Router.Handle("/static/*", http.FileServer(http.FS(s.FileSystem)))
 	s.Router.HandleFunc("/", s.handleIndex())
 	s.Router.Post("/meals", s.handleMeals())
+	s.Router.HandleFunc("/meals/{date}", s.handleMealsByDate())
 }
 
 func (s *Server) handleIndex() http.HandlerFunc {
@@ -176,4 +177,45 @@ func (s *Server) handleMeals() http.HandlerFunc {
 		http.Redirect(w, r, "/", http.StatusSeeOther)
 	}
 
+}
+
+func (s *Server) handleMealsByDate() http.HandlerFunc {
+	type ViewData struct {
+		SiteData SiteData
+		Meals    []repo.Meal
+	}
+
+	var index = []HTMLFile{
+		HeadHTML,
+		LayoutHTML,
+		RootHTML,
+	}
+
+	var data ViewData
+	data.SiteData = s.SiteData
+
+	tmpl := s.CompileTemplates("index.html", index, nil)
+
+	return func(w http.ResponseWriter, r *http.Request) {
+		dateStr := chi.URLParam(r, "date")
+		log.Print(dateStr)
+		date, err := time.Parse("2006-01-02", dateStr)
+		if err != nil {
+			http.Error(w, "Invalid date format", http.StatusBadRequest)
+			return
+		}
+
+		meals, err := repo.GetMealsByDate(date)
+		if err != nil {
+			log.Print(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		log.Println(meals)
+
+		data.Meals = meals
+
+		tmpl.ExecuteTemplate(w, "root", data)
+	}
 }
