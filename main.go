@@ -41,6 +41,10 @@ const (
 	RootHTML   HTMLFile = "templates/root.html"
 	HeadHTML   HTMLFile = "templates/head.html"
 	LayoutHTML HTMLFile = "templates/layout.html"
+
+	NavHTML HTMLFile = "templates/components/nav.html"
+
+	IndexHTML HTMLFile = "templates/views/index.html"
 )
 
 func main() {
@@ -117,6 +121,8 @@ func (s *Server) handleIndex() http.HandlerFunc {
 		HeadHTML,
 		LayoutHTML,
 		RootHTML,
+		NavHTML,
+		IndexHTML,
 	}
 
 	var data ViewData
@@ -125,7 +131,7 @@ func (s *Server) handleIndex() http.HandlerFunc {
 	tmpl := s.CompileTemplates("index.html", index, nil)
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		meals, err := repo.GetAllMeals()
+		meals, err := repo.GetMealsByDate(time.Now())
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

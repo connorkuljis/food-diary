@@ -3,6 +3,7 @@
   /* Background color */
   --bg-secondary: #161b22;
   /* Secondary background color */
+  --nav-bg-primary: #010409;
   --text-primary: #c9d1d9;
   /* Primary text color */
   --text-secondary: #8b949e;
@@ -41,5 +42,4 @@ body {
 
   background-color: var(--bg-primary);
   color: var(--text-primary);
-  padding: 0.5rem 1rem;
 }
