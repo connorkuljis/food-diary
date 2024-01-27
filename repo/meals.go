@@ -82,3 +82,19 @@ func GetMealsByDate(inTime time.Time) ([]Meal, error) {
 
 	return meals, nil
 }
+
+func DeleteMealByID(id string) error {
+	query := `DELETE FROM Meals WHERE id = ?`
+
+	res, err := db.Exec(query, id)
+	if err != nil {
+		return err
+	}
+
+	_, err = res.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

@@ -103,7 +103,8 @@ func (s *Server) Routes() {
 	s.Router.Handle("/static/*", http.FileServer(http.FS(s.FileSystem)))
 	s.Router.HandleFunc("/", s.handleIndex())
 	s.Router.Post("/meals", s.handleMeals())
-	s.Router.HandleFunc("/meals/{date}", s.handleMealsByDate())
+	s.Router.Delete("/meals/{id}", s.handleDeleteMeal())
+	// s.Router.HandleFunc("/meals/{date}", s.handleMealsByDate())
 }
 
 func (s *Server) handleIndex() http.HandlerFunc {
@@ -198,7 +199,7 @@ func (s *Server) handleMealsByDate() http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		dateStr := chi.URLParam(r, "date")
-		log.Print(dateStr)
+		log.Print("date", dateStr)
 		date, err := time.Parse("2006-01-02", dateStr)
 		if err != nil {
 			http.Error(w, "Invalid date format", http.StatusBadRequest)
@@ -217,5 +218,21 @@ func (s *Server) handleMealsByDate() http.HandlerFunc {
 		data.Meals = meals
 
 		tmpl.ExecuteTemplate(w, "root", data)
+	}
+}
+
+func (s *Server) handleDeleteMeal() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		id := chi.URLParam(r, "id")
+		log.Println("entered delete")
+
+		err := repo.DeleteMealByID(id)
+		if err != nil {
+			log.Print(err)
+			http.Error(w, err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Add("HX-Redirect", "/")
 	}
 }
