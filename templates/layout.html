@@ -1,0 +1,92 @@
+{{ define "layout" }}
+<div>
+	<h1>Food Diary</h1>
+
+	<form method="post" action="/meals">
+		<label for="breakfast">Breakfast</label>
+		<input id="breakfast" type="text" name="breakfast" />
+		<label for="lunch">Lunch</label>
+		<input id="lunch" type="text" name="lunch" />
+		<label for="dinner">Dinner</label>
+		<input id="dinner" type="text" name="dinner" />
+		<label for="snacks">Snacks</label>
+		<input id="snacks" type="text" name="snacks" />
+		<button type="submit">Submit</button>
+	</form>
+
+	<table>
+		<thead>
+			<th>Time</th>
+			<th>Breakfast</th>
+			<th>Lunch</th>
+			<th>Dinner</th>
+			<th>Snacks</th>
+		</thead>
+		<tbody>
+			{{ range .Meals }}
+			<tr>
+				<td>{{ .DateConsumed }}</td>
+				{{ if eq .MealType "breakfast"}}
+				<td>{{ .Name }}</td>
+				{{ else }}
+				<td></td>
+				{{ end }} {{ if eq .MealType "lunch"}}
+				<td>{{ .Name }}</td>
+				{{ else }}
+				<td></td>
+				{{ end }} {{ if eq .MealType "dinner"}}
+				<td>{{ .Name }}</td>
+				{{ else }}
+				<td></td>
+				{{ end }} {{ if eq .MealType "snacks"}}
+				<td>{{ .Name }}</td>
+				{{ else }}
+				<td></td>
+				{{ end }}
+			</tr>
+			{{ end }}
+		</tbody>
+	</table>
+
+	<style>
+		this {
+			max-width: 74rem;
+			margin: 0 auto;
+
+			display: grid;
+			grid-template-columns: repeat(12, 1fr);
+			grid-gap: 2rem;
+		}
+
+		this h1 {
+			grid-column: span 12;
+		}
+
+		this form {
+			grid-column: span 4;
+		}
+
+		this input,
+		this label {
+			display: block;
+			width: 100%;
+		}
+
+		this table {
+			grid-column: span 8;
+			width: 100%;
+		}
+
+		this thead {
+			font-weight: bold;
+			text-decoration: underline;
+		}
+
+		this th,
+		this td {
+			border: 1px solid black;
+			padding: 1rem;
+		}
+	</style>
+</div>
+{{ end }}
