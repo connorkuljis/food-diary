@@ -1,39 +1,44 @@
 :root {
+  /*
   --bg-primary: #0d1117;
-  /* Background color */
   --bg-secondary: #161b22;
-  /* Secondary background color */
   --nav-bg-primary: #010409;
   --text-primary: #c9d1d9;
-  /* Primary text color */
   --text-secondary: #8b949e;
-  /* Secondary text color */
   --border-color: #30363d;
-  /* Border color */
   --link-color: #58a6ff;
-  /* Link color */
   --link-hover-color: #79c0ff;
-  /* Link hover color */
   --accent-color: #1f6feb;
-  /* Accent color */
   --btn-bg: #238636;
-  /* Button background color */
   --btn-text: #ffffff;
-  /* Button text color */
   --btn-hover-bg: #2ea44f;
-  /* Button hover background color */
   --input-bg: #161b22;
-  /* Input background color */
   --input-text: #c9d1d9;
-  /* Input text color */
   --input-border: #30363d;
-  /* Input border color */
   --box-shadow-primary: 0 0 10px rgba(0, 0, 0, 0.5);
-  /* Primary box shadow */
   --box-shadow-secondary: 0 0 8px rgba(0, 0, 0, 0.3);
-  /* Secondary box shadow */
   --box-shadow-hover: 0 0 15px rgba(0, 0, 0, 0.7);
-  /* Box shadow on hover */
+
+ */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f5f5f5;
+  --nav-bg-primary: #ffffff;
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --border-color: #dddddd;
+  --link-color: #4285f4;
+  --link-hover-color: #66a3ff;
+  --accent-color: #4285f4;
+  --btn-bg: #4caf50;
+  --btn-text: #ffffff;
+  --btn-hover-bg: #66bb6a;
+  --input-bg: #ffffff;
+  --input-text: #333333;
+  --input-border: #dddddd;
+  --box-shadow-primary: 0 0 10px rgba(0, 0, 0, 0.1);
+  --box-shadow-secondary: 0 0 8px rgba(0, 0, 0, 0.1);
+  --box-shadow-hover: 0 0 15px rgba(0, 0, 0, 0.2);
+
 }
 
 body {

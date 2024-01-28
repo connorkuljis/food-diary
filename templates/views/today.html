@@ -1,0 +1,98 @@
+{{ define "view" }}
+<div hx-boost="true">
+	<div class="sidebar">
+		<form method="post" action="/api/meals">
+			<fieldset>
+				<legend>Enter your meals</legend>
+				<label for="breakfast">Breakfast</label>
+				<input id="breakfast" type="text" name="breakfast" />
+				<label for="lunch">Lunch</label>
+				<input id="lunch" type="text" name="lunch" />
+				<label for="dinner">Dinner</label>
+				<input id="dinner" type="text" name="dinner" />
+				<label for="snacks">Snacks</label>
+				<input id="snacks" type="text" name="snacks" />
+				<button type="submit">Submit</button>
+			</fieldset>
+		</form>
+	</div>
+
+	<div class="table-container">{{ template "table" .}}</div>
+
+	<style>
+		this {
+			display: grid;
+			grid-gap: 2rem;
+			grid-template-columns: repeat(12, 1fr);
+			margin: 2rem auto;
+			max-width: 74rem;
+		}
+
+		this .sidebar {
+			grid-column: span 4;
+		}
+
+		this .table-container {
+			grid-column: span 8;
+		}
+
+		this form {
+			border-radius: 0.5rem;
+			border: 1px solid var(--border-color);
+			padding: 1rem;
+		}
+
+		this fieldset {
+			border: none;
+		}
+
+		this input {
+			background-color: var(--input-bg);
+			border-radius: 0.25rem;
+			border: 1px solid var(--input-border);
+			color: var(--input-text);
+			display: block;
+			margin-bottom: 0.5rem;
+			margin-top: 0.5rem;
+			width: 100%;
+		}
+
+		this button {
+			background-color: var(--btn-bg);
+			border-radius: 0.25rem;
+			border: 1px solid var(--border-color);
+			box-shadow: var(--box-shadow-primary);
+			color: var(--btn-text);
+			margin: 1rem 0;
+			padding: 0 0.75rem;
+
+			&:hover {
+				background-color: var(--btn-hover-bg);
+				box-shadow: var(--box-shadow-hover);
+				cursor: pointer;
+			}
+		}
+
+		this label {
+			color: var(--text-primary);
+			font-weight: bold;
+		}
+
+		@media sm- {
+			this .sidebar {
+				grid-column: span 12;
+				width: 100%;
+			}
+
+			this th,
+			this td {
+				padding: 0.25rem;
+			}
+
+			this table {
+				grid-column: span 12;
+			}
+		}
+	</style>
+</div>
+{{ end }}

@@ -15,6 +15,19 @@ import (
 
 const SessionName = "session"
 
+const (
+	RootHTML   HTMLFile = "templates/root.html"
+	HeadHTML   HTMLFile = "templates/head.html"
+	LayoutHTML HTMLFile = "templates/layout.html"
+
+	NavHTML HTMLFile = "templates/components/nav.html"
+
+	TodayHTML   HTMLFile = "templates/views/today.html"
+	HistoryHTML HTMLFile = "templates/views/history.html"
+
+	TableHTMLComponent HTMLFile = "templates/components/table.html"
+)
+
 // Server encapsulates all dependencies for the web server.
 // HTTP handlers access information via receiver types.
 type Server struct {
@@ -36,16 +49,6 @@ type SiteData struct {
 var inMemoryFS embed.FS
 
 type HTMLFile string
-
-const (
-	RootHTML   HTMLFile = "templates/root.html"
-	HeadHTML   HTMLFile = "templates/head.html"
-	LayoutHTML HTMLFile = "templates/layout.html"
-
-	NavHTML HTMLFile = "templates/components/nav.html"
-
-	IndexHTML HTMLFile = "templates/views/index.html"
-)
 
 func main() {
 	fileSystem := inMemoryFS
@@ -105,30 +108,31 @@ func (s *Server) CompileTemplates(name string, files []HTMLFile, funcMap templat
 
 func (s *Server) Routes() {
 	s.Router.Handle("/static/*", http.FileServer(http.FS(s.FileSystem)))
-	s.Router.HandleFunc("/", s.handleIndex())
-	s.Router.Post("/meals", s.handleMeals())
-	s.Router.Delete("/meals/{id}", s.handleDeleteMeal())
-	// s.Router.HandleFunc("/meals/{date}", s.handleMealsByDate())
+	s.Router.HandleFunc("/today", s.handleToday())
+	s.Router.HandleFunc("/history", s.handleHistory())
+	s.Router.Post("/api/meals", s.handleMeals())
+	s.Router.Delete("/api/meals/{id}", s.handleDeleteMeal())
 }
 
-func (s *Server) handleIndex() http.HandlerFunc {
+func (s *Server) handleToday() http.HandlerFunc {
 	type ViewData struct {
 		SiteData SiteData
 		Meals    []repo.Meal
 	}
 
-	var index = []HTMLFile{
+	var today = []HTMLFile{
 		HeadHTML,
 		LayoutHTML,
 		RootHTML,
 		NavHTML,
-		IndexHTML,
+		TodayHTML,
+		TableHTMLComponent,
 	}
 
 	var data ViewData
 	data.SiteData = s.SiteData
 
-	tmpl := s.CompileTemplates("index.html", index, nil)
+	tmpl := s.CompileTemplates("today.html", today, nil)
 
 	return func(w http.ResponseWriter, r *http.Request) {
 		meals, err := repo.GetMealsByDate(time.Now())
@@ -172,6 +176,11 @@ func (s *Server) handleMeals() http.HandlerFunc {
 			}
 		}
 
+		if data.Name == "" {
+			http.Error(w, "Error, recieved an empty form submission!", http.StatusBadRequest)
+			return
+		}
+
 		newMeal := repo.NewMeal(data.Name, data.MealType, time.Now())
 		log.Println(newMeal)
 
@@ -181,12 +190,12 @@ func (s *Server) handleMeals() http.HandlerFunc {
 			return
 		}
 
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		http.Redirect(w, r, "/today", http.StatusSeeOther)
 	}
 
 }
 
-func (s *Server) handleMealsByDate() http.HandlerFunc {
+func (s *Server) handleHistory() http.HandlerFunc {
 	type ViewData struct {
 		SiteData SiteData
 		Meals    []repo.Meal
@@ -196,6 +205,9 @@ func (s *Server) handleMealsByDate() http.HandlerFunc {
 		HeadHTML,
 		LayoutHTML,
 		RootHTML,
+		NavHTML,
+		HistoryHTML,
+		TableHTMLComponent,
 	}
 
 	var data ViewData
@@ -204,22 +216,29 @@ func (s *Server) handleMealsByDate() http.HandlerFunc {
 	tmpl := s.CompileTemplates("index.html", index, nil)
 
 	return func(w http.ResponseWriter, r *http.Request) {
-		dateStr := chi.URLParam(r, "date")
-		log.Print("date", dateStr)
-		date, err := time.Parse("2006-01-02", dateStr)
-		if err != nil {
-			http.Error(w, "Invalid date format", http.StatusBadRequest)
-			return
+		var meals []repo.Meal
+		dateStr := r.URL.Query().Get("date")
+		if dateStr != "" {
+			date, err := time.Parse("2006-01-02", dateStr)
+			if err != nil {
+				http.Error(w, "Invalid date format", http.StatusBadRequest)
+				return
+			}
+			meals, err = repo.GetMealsByDate(date)
+			if err != nil {
+				log.Print(err)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
+		} else {
+			var err error
+			meals, err = repo.GetAllMeals()
+			if err != nil {
+				log.Print(err)
+				http.Error(w, err.Error(), http.StatusInternalServerError)
+				return
+			}
 		}
-
-		meals, err := repo.GetMealsByDate(date)
-		if err != nil {
-			log.Print(err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-
-		log.Println(meals)
 
 		data.Meals = meals
 
@@ -239,6 +258,6 @@ func (s *Server) handleDeleteMeal() http.HandlerFunc {
 			return
 		}
 
-		w.Header().Add("HX-Redirect", "/")
+		w.Header().Add("HX-Redirect", "/today")
 	}
 }
