@@ -26,6 +26,7 @@ const (
 	HistoryHTML HTMLFile = "templates/views/history.html"
 
 	TableHTMLComponent HTMLFile = "templates/components/table.html"
+	ModalHTMLComponent HTMLFile = "templates/components/modal.html"
 )
 
 // Server encapsulates all dependencies for the web server.
@@ -108,10 +109,16 @@ func (s *Server) CompileTemplates(name string, files []HTMLFile, funcMap templat
 
 func (s *Server) Routes() {
 	s.Router.Handle("/static/*", http.FileServer(http.FS(s.FileSystem)))
+	s.Router.HandleFunc("/today", s.handleIndex())
 	s.Router.HandleFunc("/today", s.handleToday())
 	s.Router.HandleFunc("/history", s.handleHistory())
 	s.Router.Post("/api/meals", s.handleMeals())
 	s.Router.Delete("/api/meals/{id}", s.handleDeleteMeal())
+}
+
+func (s *Server) handleIndex() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+	}
 }
 
 func (s *Server) handleToday() http.HandlerFunc {
@@ -127,6 +134,7 @@ func (s *Server) handleToday() http.HandlerFunc {
 		NavHTML,
 		TodayHTML,
 		TableHTMLComponent,
+		ModalHTMLComponent,
 	}
 
 	var data ViewData
