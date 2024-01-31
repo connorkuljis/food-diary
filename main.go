@@ -13,18 +13,22 @@ import (
 	"github.com/gorilla/sessions"
 )
 
-const SessionName = "session"
-
 const (
+	Port            = "8081"
+	StaticDirName   = "static"
+	TemplateDirName = "templates"
+
+	// HTML Base Templates
 	RootHTML   HTMLFile = "templates/root.html"
 	HeadHTML   HTMLFile = "templates/head.html"
 	LayoutHTML HTMLFile = "templates/layout.html"
 
-	NavHTML HTMLFile = "templates/components/nav.html"
-
+	// HTML Views
 	TodayHTML   HTMLFile = "templates/views/today.html"
 	HistoryHTML HTMLFile = "templates/views/history.html"
 
+	// HTML Components
+	NavHTML            HTMLFile = "templates/components/nav.html"
 	TableHTMLComponent HTMLFile = "templates/components/table.html"
 	ModalHTMLComponent HTMLFile = "templates/components/modal.html"
 )
@@ -47,64 +51,37 @@ type SiteData struct {
 }
 
 //go:embed templates/* static/*
-var inMemoryFS embed.FS
+var embedFS embed.FS
 
 type HTMLFile string
 
 func main() {
-	fileSystem := inMemoryFS
 	router := chi.NewMux()
-	store := sessions.NewCookieStore([]byte("special_key"))
-	port := "8081"
-	staticDir := "static"
-	templateDir := "templates"
-	siteData := SiteData{
-		Title: "Food Diary",
+	store := sessions.NewCookieStore([]byte("3lWcaN9nYFjh9Dy5RJWXR84nxYSOZSQx4R11y8NxUNQ="))
+	siteData := SiteData{Title: "Food Diary"}
+
+	s := Server{
+		FileSystem:   embedFS,
+		Router:       router,
+		Sessions:     store,
+		Port:         Port,
+		StaticDir:    StaticDirName,
+		TemplatesDir: TemplateDirName,
+		SiteData:     siteData,
 	}
 
-	log.Println("[ 💿 Spinning up server on http://localhost:" + port + " ]")
+	s.Routes()
 
 	err := repo.InitDB()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	s := Server{
-		FileSystem:   fileSystem,
-		Router:       router,
-		Sessions:     store,
-		Port:         port,
-		StaticDir:    staticDir,
-		TemplatesDir: templateDir,
-		SiteData:     siteData,
-	}
+	log.Println("[ 💿 Spinning up server on http://localhost:" + s.Port + " ]")
 
-	s.Routes()
-
-	err = http.ListenAndServe(":"+s.Port, s.Router)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func (s *Server) CompileTemplates(name string, files []HTMLFile, funcMap template.FuncMap) *template.Template {
-	tmpl := template.New(name)
-
-	if funcMap != nil {
-		tmpl.Funcs(funcMap)
-	}
-
-	var patterns []string
-	for _, file := range files {
-		patterns = append(patterns, string(file))
-	}
-
-	tmpl, err := tmpl.ParseFS(s.FileSystem, patterns...)
-	if err != nil {
+	if err = http.ListenAndServe(":"+s.Port, s.Router); err != nil {
 		log.Fatal(err)
 	}
-
-	return tmpl
 }
 
 func (s *Server) Routes() {
@@ -118,6 +95,7 @@ func (s *Server) Routes() {
 
 func (s *Server) handleIndex() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "/today", http.StatusSeeOther)
 	}
 }
 
@@ -268,4 +246,24 @@ func (s *Server) handleDeleteMeal() http.HandlerFunc {
 
 		w.Header().Add("HX-Redirect", "/today")
 	}
+}
+
+func (s *Server) CompileTemplates(name string, files []HTMLFile, funcMap template.FuncMap) *template.Template {
+	tmpl := template.New(name)
+
+	if funcMap != nil {
+		tmpl.Funcs(funcMap)
+	}
+
+	var patterns []string
+	for _, file := range files {
+		patterns = append(patterns, string(file))
+	}
+
+	tmpl, err := tmpl.ParseFS(s.FileSystem, patterns...)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return tmpl
 }
