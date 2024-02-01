@@ -9,13 +9,15 @@ import (
 
 type Meal struct {
 	Id           int64  `db:"id"`
+	UserID       int64  `db:"user_id"`
 	Name         string `db:"name"`
 	MealType     string `db:"meal_type"`
 	DateConsumed string `db:"date_consumed"`
 }
 
-var mealsSchema = `CREATE TABLE IF NOT EXISTS Meals (
+var MealsSchema = `CREATE TABLE IF NOT EXISTS Meals (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	user_id INTEGER REFERENCES Users(id),
 	name TEXT NOT NULL,
 	meal_type TEXT NOT NULL,
 	date_consumed TEXT NOT NULL
@@ -32,16 +34,17 @@ const (
 	Snacks    MealType = "snacks"
 )
 
-func NewMeal(name string, mealType MealType, time time.Time) Meal {
+func NewMeal(name string, userId int64, mealType MealType, time time.Time) Meal {
 	return Meal{
 		Name:         name,
+		UserID:       userId,
 		MealType:     string(mealType),
 		DateConsumed: time.Format(Timestamp),
 	}
 }
 
 func InsertMeal(meal Meal) (Meal, error) {
-	query := `INSERT INTO Meals(name, meal_type, date_consumed) VALUES (:name, :meal_type, :date_consumed)`
+	query := `INSERT INTO Meals(name, user_id, meal_type, date_consumed) VALUES (:name, :user_id, :meal_type, :date_consumed)`
 
 	res, err := db.NamedExec(query, meal)
 	if err != nil {
@@ -70,12 +73,12 @@ func GetAllMeals() ([]Meal, error) {
 	return meals, nil
 }
 
-func GetMealsByDate(inTime time.Time) ([]Meal, error) {
-	query := `SELECT * FROM Meals WHERE DATE(date_consumed) = DATE(?)`
+func GetMealsByUserAndDate(user User, inTime time.Time) ([]Meal, error) {
+	query := `SELECT * FROM Meals WHERE user_id = ? AND DATE(date_consumed) = DATE(?)`
 
 	var meals []Meal
 
-	err := db.Select(&meals, query, inTime.Format("2006-01-02"))
+	err := db.Select(&meals, query, user.Id, inTime.Format("2006-01-02"))
 	if err != nil {
 		return meals, err
 	}
@@ -83,10 +86,10 @@ func GetMealsByDate(inTime time.Time) ([]Meal, error) {
 	return meals, nil
 }
 
-func DeleteMealByID(id string) error {
-	query := `DELETE FROM Meals WHERE id = ?`
+func DeleteMealByUserAndId(user User, id string) error {
+	query := `DELETE FROM Meals WHERE user_id = ? AND id = ?`
 
-	res, err := db.Exec(query, id)
+	res, err := db.Exec(query, user.Id, id)
 	if err != nil {
 		return err
 	}

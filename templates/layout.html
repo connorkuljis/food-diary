@@ -1,1 +1,11 @@
-{{ define "layout" }} {{ template "nav" . }} {{ template "view" . }} {{ end }}
+{{ define "layout" }}
+<div>
+	{{ template "nav" . }}
+	<div class="view">{{ template "view" . }}</div>
+	<style>
+		this .view {
+			padding: 0 1rem;
+		}
+	</style>
+</div>
+{{ end }}

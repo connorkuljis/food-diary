@@ -1,0 +1,74 @@
+{{ define "view" }}
+<div>
+	<h1>Register</h1>
+	{{ if eq .ErrorMessage ""}} {{ else }}
+	<p style="color: tomato">{{ .ErrorMessage }}</p>
+	{{ end }}
+	<form method="post" action="/register">
+		<label for="email">Email</label>
+		<input
+			id="email"
+			type="email"
+			name="email"
+			placeholder="Enter email"
+			required
+		/>
+		<label for="password">Password</label>
+		<input
+			id="password"
+			type="password"
+			name="password"
+			placeholder="Password"
+			required
+		/>
+		<button type="submit">Register</button>
+	</form>
+	<style>
+		this {
+			padding: 1rem;
+		}
+
+		this form {
+			max-width: 32rem;
+			display: grid;
+			grid-template-columns: 1fr;
+		}
+
+		this input {
+			margin-top: 0.5rem;
+			margin-bottom: 1rem;
+		}
+		this input {
+			background-color: var(--input-bg);
+			border-radius: 0.25rem;
+			border: 1px solid var(--input-border);
+			color: var(--input-text);
+			display: block;
+			margin-bottom: 0.5rem;
+			margin-top: 0.5rem;
+			width: 100%;
+		}
+
+		this button {
+			background-color: var(--btn-bg);
+			border-radius: 0.25rem;
+			border: 1px solid var(--border-color);
+			box-shadow: var(--box-shadow-primary);
+			color: var(--btn-text);
+			margin: 1rem 0;
+			padding: 0 0.75rem;
+
+			&:hover {
+				background-color: var(--btn-hover-bg);
+				box-shadow: var(--box-shadow-hover);
+				cursor: pointer;
+			}
+		}
+
+		this label {
+			color: var(--text-primary);
+			font-weight: bold;
+		}
+	</style>
+</div>
+{{ end }}
