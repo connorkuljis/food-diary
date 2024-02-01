@@ -34,7 +34,7 @@ type SiteData struct {
 }
 
 const (
-	Port             = "8081"
+	Port             = "8080"
 	StaticDirName    = "/static"
 	TemplatesDirName = "/templates"
 )
